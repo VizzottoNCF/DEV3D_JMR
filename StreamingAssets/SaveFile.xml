@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<ClassSaveState xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <xPos>1.07288349E-06</xPos>
+  <yPos>1.85</yPos>
+  <zPos>-4.47034779E-07</zPos>
+  <xRot>4.300004</xRot>
+  <yRot>32.1000137</yRot>
+  <zRot>1.07022956E-07</zRot>
+  <redAcquired>false</redAcquired>
+  <greenAcquired>false</greenAcquired>
+  <blueAcquired>false</blueAcquired>
+  <yellowAcquired>false</yellowAcquired>
+</ClassSaveState>
