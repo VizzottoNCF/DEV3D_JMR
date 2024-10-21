@@ -17,40 +17,32 @@ public class ScrGameMaster : MonoBehaviour
     public GameObject WallKeyItem2 = null; 
     public GameObject PreviousItemInteracted = null;//var object interacted previously    
     public GameObject ItemHoldingNow; //var item holding now
+    public GameObject ItemHoldingNowVisual;
     public FirstPersonController fpcScript; // movement script to be able to control/lock movement
     public ScrRayCasting RayCastScript;
     private float interactionDelayMax = 1.0f;
     private float interactionDelayNow = 1.0f;
 
-    public string[] arr;
-    public string[] arr2;
-    public string[] arr3;
-
-
-    #region unused
-    // temp vars for data persistance class. Unused
-    public bool redAcquired = false;
-    public bool greenAcquired = false;
-    public bool blueAcquired = false;
-    public bool yellowAcquired = false;
-    #endregion
 
     void Start()
     {
         #region Museum Items arrangements as keys
 
-        arr = new string[] { "Diálogo 1 (parte 2)", "Diálogo 2 (parte 2)", "Diálogo 3 (parte 2)" };
-        arr2 = new string[] { "Diálogo 1 (parte 3)", "Diálogo 2 (parte 3)", "Diálogo 3 (parte 3)", "Diálogo 4 (parte 3)" };
-        arr3 = new string[] { "Diálogo 1 (parte 4)", "Diálogo 2 (parte 4)" };
-
-
         rf_WallKeys();
 
         print(WallKeyItem1);
         #endregion
+
+        // item holding visual startup
+        rf_UpdateHoldingItemVisual()
+;
+
+
+        #region scripts
         fpcScript = GameObject.FindWithTag("Player").GetComponent<FirstPersonController>();
         dialogScr = GameObject.FindWithTag("DialogBox").GetComponent<ScrDialogueBox>();
         RayCastScript = GameObject.FindWithTag("RayCastPlayer").GetComponent<ScrRayCasting>();
+        #endregion
     }
 
     void Update()
@@ -68,19 +60,6 @@ public class ScrGameMaster : MonoBehaviour
             interactionDelayNow = interactionDelayMax;
         }
 
-
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            rf_PassDialogueText(arr);
-        }
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            rf_PassDialogueText(arr2);
-        }
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            rf_PassDialogueText(arr3);
-        }
         if (Input.GetKey(KeyCode.O))
         {
             rf_lockPlayer();
@@ -88,6 +67,18 @@ public class ScrGameMaster : MonoBehaviour
         if (Input.GetKey(KeyCode.P))
         {
             rf_unlockPlayer();
+        }
+    }
+
+    public void rf_UpdateHoldingItemVisual()
+    {
+        if (ItemHoldingNow == null)
+        {
+            ItemHoldingNowVisual.GetComponent<MeshFilter>().mesh = null;
+        }
+        else
+        {
+            ItemHoldingNowVisual.GetComponent<MeshFilter>().mesh = ItemHoldingNow.GetComponent<MeshFilter>().mesh;
         }
     }
 
@@ -104,7 +95,11 @@ public class ScrGameMaster : MonoBehaviour
         if(PreviousItemInteracted!=null&& PreviousItemInteracted!= ItemHoldingNow) PreviousItemInteracted.GetComponent<MeshRenderer>().enabled = true;
         PreviousItemInteracted = ItemToTurnOff;
 
-        Debug.Log(ItemHoldingNow);
+        Debug.Log("Now Holding: " + ItemHoldingNow);
+
+        rf_UpdateHoldingItemVisual();
+
+
     }
 
     private void rf_lockPlayer()
@@ -134,6 +129,12 @@ public class ScrGameMaster : MonoBehaviour
             _BoxCollider.enabled = false;
             print("PAREDE 2 DESTRUÍDA");
         }
+    }
+
+    public void rf_DestroyWallNPC(GameObject _Wall)
+    {
+        _Wall.SetActive(false);
+        print(_Wall.name + " desativado");
     }
 
     public void rf_WallKeys()
@@ -189,11 +190,43 @@ public class ScrGameMaster : MonoBehaviour
 
     public void rf_GhostInteraction(GameObject _ghost)
     {
+
+        var _temp_ghostScript = _ghost.GetComponent<ScrGhostInteraction>();
+
+        // flips ghostkey1 as true
+        if (_temp_ghostScript.GhostKey1 == ItemHoldingNow)
+        {
+            // destroys wall boundary if there is one
+            if (_temp_ghostScript.Wall1 != null)
+            {
+                rf_DestroyWallNPC(_temp_ghostScript.Wall1);
+                rf_MeshTurnOff(null);
+            }
+            _temp_ghostScript.GhostKey1Used = true;
+            _temp_ghostScript.dialogue = _temp_ghostScript.dialogueKey2;
+        }
+        // flips ghostkey2 as true
+        if (_temp_ghostScript.GhostKey2 == ItemHoldingNow)
+        {
+            // destroys wall boundary if there is one
+            if (_temp_ghostScript.Wall2 != null)
+            {
+                rf_DestroyWallNPC(_temp_ghostScript.Wall2);
+            }
+            _temp_ghostScript.GhostKey2Used = true;
+            _temp_ghostScript.dialogue = _temp_ghostScript.dialogueEnd;
+        }
+
         // passes through public var Dialogue from NPC to Dialogue 
         if (fpcScript.playerCanMove && interactionDelayNow <= 0)
         {
             rf_PassDialogueText(_ghost.GetComponent<ScrGhostInteraction>().dialogue);
         }
+
+        _temp_ghostScript.FirstInteraction = true;
+
+        
+
     }
 
 
